@@ -1,8 +1,15 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Query, Resolver, Mutation } from '@nestjs/graphql';
 import { Customer } from 'lib/entities/customer.entity';
 import { CustomerService } from './customer.service';
 import { GetCustomerInput } from './dto/customer.input';
 
+//CRUD
+//get all customers
+//input id: update email for a customer. Return updated Customer
+//input id/email: delete a customer. Return boolean. True if removed
+
+//login/signup
+//input email + password. Return true if ok
 @Resolver(() => Customer)
 export class CustomerResolver {
   constructor(private readonly customerService: CustomerService) {}
@@ -10,5 +17,35 @@ export class CustomerResolver {
   @Query(() => [Customer])
   async customers(@Args('data') { skip, take, where }: GetCustomerInput) {
     return this.customerService.findAll({ skip, take, where });
+  }
+
+  @Query(() => Boolean)
+  async login(
+    @Args('email') email:string,
+    @Args('password') password:string) {
+    return this.customerService.login(email, password);
+  }
+
+  @Mutation(() => Customer)
+  async updateEmail(
+    @Args('id') id:string,
+    @Args('updatedEmail') updatedEmail:string
+  ) {
+    return this.customerService.updateEmail(id, updatedEmail);
+  }
+
+  @Mutation(() => Boolean)
+  async removeUserById(@Args('id') id:string) {
+    return this.customerService.removeById(id);
+  }
+
+  @Mutation(() => Boolean)
+  async removeUserByEmail(@Args('email') email:string) {
+    return this.customerService.removeByEmail(email);
+  }
+
+  @Mutation(() => Boolean)
+  async signup(@Args('email') email:string, @Args('password') password:string) {
+    return this.customerService.signup(email, password);
   }
 }

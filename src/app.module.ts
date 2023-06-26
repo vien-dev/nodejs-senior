@@ -7,12 +7,15 @@ import { AppService } from './app.service';
 import { join } from 'path';
 import { PrismaService } from './prisma.service';
 import { CustomerModule } from './customer/customer.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     CustomerModule,
+    AuthModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      include: [CustomerModule, AuthModule],
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       buildSchemaOptions: {
         dateScalarMode: 'timestamp',
@@ -20,7 +23,7 @@ import { CustomerModule } from './customer/customer.module';
       context: ({ request, reply }) => ({ request, reply }),
       playground: true,
       introspection: true, // TODO update this so that it's off in production;
-    }),
+    })
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

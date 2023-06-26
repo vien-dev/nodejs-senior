@@ -7,9 +7,6 @@ import { GetCustomerInput } from './dto/customer.input';
 //get all customers
 //input id: update email for a customer. Return updated Customer
 //input id/email: delete a customer. Return boolean. True if removed
-
-//login/signup
-//input email + password. Return true if ok
 @Resolver(() => Customer)
 export class CustomerResolver {
   constructor(private readonly customerService: CustomerService) {}
@@ -17,13 +14,6 @@ export class CustomerResolver {
   @Query(() => [Customer])
   async customers(@Args('data') { skip, take, where }: GetCustomerInput) {
     return this.customerService.findAll({ skip, take, where });
-  }
-
-  @Query(() => Boolean)
-  async login(
-    @Args('email') email:string,
-    @Args('password') password:string) {
-    return this.customerService.login(email, password);
   }
 
   @Mutation(() => Customer)
@@ -42,10 +32,5 @@ export class CustomerResolver {
   @Mutation(() => Boolean)
   async removeUserByEmail(@Args('email') email:string) {
     return this.customerService.removeByEmail(email);
-  }
-
-  @Mutation(() => Boolean)
-  async signup(@Args('email') email:string, @Args('password') password:string) {
-    return this.customerService.signup(email, password);
   }
 }

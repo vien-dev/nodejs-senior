@@ -1,5 +1,5 @@
 import { Args, Query, Resolver, Mutation } from '@nestjs/graphql';
-import { Customer } from 'lib/entities/customer.entity';
+import { Customer } from './dto/customer.entity';
 import { CustomerService } from './customer.service';
 import { GetCustomerInput } from './dto/customer.input';
 

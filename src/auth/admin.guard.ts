@@ -9,31 +9,19 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 
 @Injectable()
-export class GqlAuthGuard extends AuthGuard('jwt') {
+export class AdminGuard extends AuthGuard('jwt') {
     constructor(private jwtService: JwtService) {
         super();
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const ctx = GqlExecutionContext.create(context);
-      const { req } = ctx.getContext();
-      
-      const token = this.extractTokenFromHeader(req);
-      if (!token) {
+      const { req } = ctx.getContext(); 
+      const userRole = req.jwtPayload.role; //This assumes that auth.guard has filled this field before.
+      if (!userRole || userRole !== 'ADMIN') {
         throw new UnauthorizedException();
       }
-      try {
-        // Keep this to get the role out of the payload later
-        const payload = await this.jwtService.verifyAsync(token);
-        
-        req['jwtPayload'] = {
-            id: payload.sub, 
-            email: payload.email, 
-            role: payload.role
-        };
-      } catch {
-        throw new UnauthorizedException();
-      }
+
       return true;
     }
   

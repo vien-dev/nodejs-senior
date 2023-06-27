@@ -14,7 +14,7 @@ export class AuthService {
                 });
     
             if(customer.password === password) {
-                const payload = { sub: customer.id, email: customer.email };
+                const payload = { sub: customer.id, email: customer.email, role: customer.role };
                 const accessToken = this.jwt.sign(payload, { expiresIn: '60s' });
                 const refreshToken = this.jwt.sign(payload, { expiresIn: '3m' });
 
@@ -51,7 +51,7 @@ export class AuthService {
     async refresh(refreshToken:string) {
         try {
             const token = await this.jwt.verify(refreshToken);
-            const payload = {sub: token.id, email: token.email};
+            const payload = {sub: token.id, email: token.email, role: token.role};
             
 
             const accessToken = this.jwt.sign(payload, { expiresIn: '60s' });

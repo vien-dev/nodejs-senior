@@ -1,0 +1,6 @@
+- improve returning of true/false to error info
+- config file for configurations: token expire time, sending email
+- unified function to generate tokens.
+- untrack src/schema.gql
+- ability to update password (self for user)
+- reset password

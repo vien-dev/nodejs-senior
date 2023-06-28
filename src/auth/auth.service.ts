@@ -48,17 +48,52 @@ export class AuthService {
         }
     }
 
+    async getJwtPayload(jwtToken:string) {
+        try {
+            return await this.jwt.verify(jwtToken);
+        } catch(e) {
+            throw e;
+        }
+    }
+
     async refresh(refreshToken:string) {
         try {
-            const token = await this.jwt.verify(refreshToken);
-            const payload = {sub: token.id, email: token.email, role: token.role};
-            
+            const jwtPayload = await this.getJwtPayload(refreshToken);
+            const payload = {
+                sub: jwtPayload.id, 
+                email: jwtPayload.email, 
+                role: jwtPayload.role
+            };
 
             const accessToken = this.jwt.sign(payload, { expiresIn: '60s' });
 
             return {accessToken};
         } catch(e) {
             throw e;
+        }
+    }
+
+    async verifyAccount(id:string, email:string, activationCode:string) {
+        try {
+            const jwtPayload = await this.getJwtPayload(activationCode);
+            if (jwtPayload.sub !== id || jwtPayload.email !== email) {
+                throw new UnauthorizedException('Verified account is different from login account.');
+            }
+
+            await this.prisma.customer.update({
+                data: {
+                    isVerified: true
+                },
+                where: {
+                    id,
+                    email
+                }
+            });
+
+            return true;
+        } catch(e) {
+            console.log(e);
+            return false;
         }
     }
 }

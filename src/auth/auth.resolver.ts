@@ -1,6 +1,8 @@
-import { Args, Resolver, Mutation } from '@nestjs/graphql';
+import { Args, Resolver, Mutation, Context, GqlExecutionContext } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { LoginResponse, RefreshAccessTokenResponse } from './dto/auth.output';
+import { ExecutionContext, UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from './auth.guard';
 
 //login
 //input email + password. Return access token + refresh token
@@ -27,5 +29,17 @@ export class AuthResolver {
     @Mutation(() => RefreshAccessTokenResponse)
     async refreshAccessToken(@Args('refreshToken') refreshToken:string) {
         return this.authService.refresh(refreshToken);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Mutation(() => Boolean)
+    async verifyAccount(
+        @Context('context') context:ExecutionContext,
+        @Args('activationCode') activationCode:string) {
+            const ctx = GqlExecutionContext.create(context);
+            const { req } = ctx.getContext(); 
+            const jwtPayload = req.jwtPayload.role;
+
+            return this.authService.verifyAccount(jwtPayload.sub, jwtPayload.email, activationCode);
     }
 }

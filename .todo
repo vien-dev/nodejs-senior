@@ -4,3 +4,5 @@
 - untrack src/schema.gql
 - ability to update password (self for user)
 - reset password
+- UTs
+- encrypt stored password

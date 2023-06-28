@@ -31,15 +31,10 @@ export class AuthResolver {
         return this.authService.refresh(refreshToken);
     }
 
-    @UseGuards(GqlAuthGuard)
     @Mutation(() => Boolean)
     async verifyAccount(
-        @Context('context') context:ExecutionContext,
+        @Context('req') req:Request,
         @Args('activationCode') activationCode:string) {
-            const ctx = GqlExecutionContext.create(context);
-            const { req } = ctx.getContext(); 
-            const jwtPayload = req.jwtPayload.role;
-
-            return this.authService.verifyAccount(jwtPayload.sub, jwtPayload.email, activationCode);
+            return this.authService.verifyAccount(activationCode);
     }
 }

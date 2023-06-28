@@ -8,6 +8,7 @@ import { join } from 'path';
 import { PrismaService } from './prisma.service';
 import { CustomerModule } from './customer/customer.module';
 import { AuthModule } from './auth/auth.module';
+import { MailingModule } from './mailing/mailing.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { AuthModule } from './auth/auth.module';
       context: ({ request, reply }) => ({ request, reply }),
       playground: true,
       introspection: true, // TODO update this so that it's off in production;
-    })
+    }),
+    MailingModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

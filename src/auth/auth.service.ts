@@ -1,10 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { MailingService } from 'src/mailing/mailing.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private prisma: PrismaService, private jwt: JwtService) {}
+    constructor(
+        private prisma: PrismaService, 
+        private jwt: JwtService, 
+        private mailingService: MailingService
+    ) {}
 
     async login(email:string, password:string) {
         try {
@@ -15,8 +20,8 @@ export class AuthService {
     
             if(customer.password === password) {
                 const payload = { sub: customer.id, email: customer.email, role: customer.role };
-                const accessToken = this.jwt.sign(payload, { expiresIn: '60s' });
-                const refreshToken = this.jwt.sign(payload, { expiresIn: '3m' });
+                const accessToken = this.jwt.sign(payload, { expiresIn: '10m' });
+                const refreshToken = this.jwt.sign(payload, { expiresIn: '20m' });
 
                 return {accessToken, refreshToken};
             } else {
@@ -40,6 +45,15 @@ export class AuthService {
                     password
                 }
             });
+
+            const payload = { sub: customer.id, email: customer.email, role: customer.role };
+            const activationCode = this.jwt.sign(payload, { expiresIn: '30m' });
+
+            await this.mailingService.sendEmail(
+                customer.email,
+                'Verify your account',
+                `Please use activation code ${activationCode} to verify your account.`,
+            );
     
             return true;
         } catch(e) {
@@ -65,7 +79,7 @@ export class AuthService {
                 role: jwtPayload.role
             };
 
-            const accessToken = this.jwt.sign(payload, { expiresIn: '60s' });
+            const accessToken = this.jwt.sign(payload, { expiresIn: '10m' });
 
             return {accessToken};
         } catch(e) {
@@ -73,21 +87,17 @@ export class AuthService {
         }
     }
 
-    async verifyAccount(id:string, email:string, activationCode:string) {
+    async verifyAccount(activationCode:string) {
         try {
             const jwtPayload = await this.getJwtPayload(activationCode);
-            if (jwtPayload.sub !== id || jwtPayload.email !== email) {
-                throw new UnauthorizedException('Verified account is different from login account.');
-            }
 
             await this.prisma.customer.update({
+                where: {
+                    id: jwtPayload.sub
+                },
                 data: {
                     isVerified: true
                 },
-                where: {
-                    id,
-                    email
-                }
             });
 
             return true;
